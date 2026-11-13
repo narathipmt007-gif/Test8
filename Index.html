@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบเปิดไพ่ทำนาย 78 ใบ</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --gold-primary: #d4af37;
+      --gold-light: #f6e27a;
+      --gold-dark: #996515;
+      --bg-dark: #09080c;
+      --card-bg: #14121a;
+    }
+
+    body {
+      font-family: 'Prompt', sans-serif;
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.14) 0%, transparent 55%),
+        radial-gradient(circle at 85% 90%, rgba(153, 101, 21, 0.1) 0%, transparent 45%);
+      color: #f3f4f6;
+      min-height: 100vh;
+    }
+
+    .font-cinzel {
+      font-family: 'Cinzel', serif;
+    }
+
+    .gold-text {
+      background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gold-border {
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(212, 175, 55, 0.08);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #d4af37 0%, #aa771c 100%);
+      color: #09080c;
+      font-weight: 600;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+    }
+
+    .btn-gold:hover {
+      background: linear-gradient(135deg, #f6e27a 0%, #d4af37 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+    }
+
+    .btn-count {
+      background: rgba(20, 18, 26, 0.9);
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      color: #e5e7eb;
+      transition: all 0.2s ease;
+    }
+
+    .btn-count:hover {
+      border-color: #d4af37;
+      color: #f6e27a;
+    }
+
+    .btn-count.active {
+      background: linear-gradient(135deg, #d4af37 0%, #996515 100%);
+      color: #09080c;
+      border-color: #f6e27a;
+      font-weight: 600;
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+    }
+
+    /* แอนิเมชันสับไพ่ */
+    @keyframes shufflePulse {
+      0% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(0.95) rotate(-2deg); }
+      50% { transform: scale(1.02) rotate(2deg); }
+      75% { transform: scale(0.97) rotate(-1deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .shuffling {
+      animation: shufflePulse 0.45s ease-in-out;
+    }
+
+    /* ไพ่ในกอง 78 ใบ */
+    .deck-card {
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease, opacity 0.25s ease;
+      cursor: pointer;
+    }
+
+    .deck-card:hover:not(.picked) {
+      transform: translateY(-8px) scale(1.05);
+      z-index: 20;
+    }
+
+    .deck-card:hover:not(.picked) .card-frame {
+      border-color: #f6e27a;
+      box-shadow: 0 8px 18px rgba(212, 175, 55, 0.45);
+    }
+
+    .deck-card.picked {
+      opacity: 0.22;
+      cursor: not-allowed;
+      transform: scale(0.94);
+    }
+
+    /* 3D Flip สำหรับไพ่ผลลัพธ์ */
+    .flip-card {
+      perspective: 1000px;
+      flex: 0 0 auto; /* บังคับไม่ให้ย่อหรือขึ้นบรรทัดใหม่ */
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front,
+    .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 0.65rem;
+      overflow: hidden;
+    }
+
+    .flip-card-front {
+      transform: rotateY(180deg);
+    }
+
+    /* Custom Scrollbar สำหรับแถบผลลัพธ์แนวนอน */
+    .horizontal-scroll::-webkit-scrollbar {
+      height: 8px;
+    }
+    .horizontal-scroll::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 9999px;
+    }
+    .horizontal-scroll::-webkit-scrollbar-thumb {
+      background: rgba(212, 175, 55, 0.45);
+      border-radius: 9999px;
+    }
+    .horizontal-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(212, 175, 55, 0.8);
+    }
+  </style>
+</head>
+<body class="pb-14">
+
+  <!-- Header -->
+  <header class="pt-7 pb-5 px-4 text-center border-b border-yellow-600/20 bg-black/40 backdrop-blur-sm">
+    <p class="font-cinzel text-xs tracking-[0.3em] text-yellow-500/80 uppercase mb-1">Mystic Oracle Deck • 78 Cards</p>
+    <h1 class="text-2xl sm:text-4xl font-bold gold-text tracking-wide">ระบบเปิดไพ่ทำนาย 78 ใบ</h1>
+    <p class="text-gray-400 text-xs sm:text-sm mt-1.5">ตั้งจิตอธิษฐาน เลือกจำนวนไพ่ กดสับไพ่ แล้วเลือกไพ่จากสำรับด้านล่าง</p>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 mt-6 space-y-7">
+
+    <!-- แผงควบคุม (เลือกจำนวนไพ่ + ปุ่มสับไพ่) -->
+    <section class="gold-border bg-[#121017]/90 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <!-- เลือกจำนวนไพ่ 3, 5, 7, 10 -->
+      <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+        <span class="text-sm text-yellow-200/90 font-medium mr-1">จำนวนไพ่ที่เลือก:</span>
+        <button onclick="setDrawLimit(3)" id="btn-limit-3" class="btn-count active px-4 py-2 rounded-xl text-sm">3 ใบ</button>
+        <button onclick="setDrawLimit(5)" id="btn-limit-5" class="btn-count px-4 py-2 rounded-xl text-sm">5 ใบ</button>
+        <button onclick="setDrawLimit(7)" id="btn-limit-7" class="btn-count px-4 py-2 rounded-xl text-sm">7 ใบ</button>
+        <button onclick="setDrawLimit(10)" id="btn-limit-10" class="btn-count px-4 py-2 rounded-xl text-sm">10 ใบ</button>
+      </div>
+
+      <!-- สถานะและปุ่มสับไพ่ -->
+      <div class="flex items-center gap-3 sm:gap-4">
+        <div class="text-sm bg-black/60 border border-yellow-600/30 px-4 py-2 rounded-xl">
+          เลือกแล้ว: <span id="picked-count" class="text-yellow-400 font-bold text-base">0</span> / <span id="max-count" class="text-gray-300 font-semibold">3</span> ใบ
+        </div>
+
+        <button onclick="shuffleDeck(true)" class="btn-gold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          สับไพ่ (สุ่มใหม่)
+        </button>
+      </div>
+    </section>
+
+    <!-- ส่วนแสดงผลลัพธ์การเลือก (แนวนอนถัดกันไป) -->
+    <section class="gold-border bg-[#121017]/95 rounded-2xl p-4 sm:p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base sm:text-lg font-semibold text-yellow-400 flex items-center gap-2">
+          <span>✦</span> ผลลัพธ์ไพ่ที่เลือก <span class="text-xs text-gray-400 font-normal">(คลิกที่ใบไพ่เพื่อขยายดูภาพชัด)</span>
+        </h2>
+        <button onclick="resetSelectionOnly()" class="text-xs text-gray-400 hover:text-yellow-400 underline transition">
+          ล้างไพ่ที่เลือก
+        </button>
+      </div>
+
+      <!-- กล่องเลื่อนแนวนอนบังคับเรียงถัดกันไป -->
+      <div class="w-full overflow-x-auto horizontal-scroll pb-3">
+        <div id="result-row" class="flex flex-row flex-nowrap items-start justify-start gap-4 sm:gap-5 w-max mx-auto min-h-[230px] px-2">
+          <!-- ไพ่ที่ถูกเลือกจะถูกสร้างที่นี่ในแนวนอน -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ส่วนกองไพ่ทั้งหมด 78 ใบ -->
+    <section class="gold-border bg-[#121017]/80 rounded-2xl p-4 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
+        <h2 class="text-base sm:text-lg font-semibold text-yellow-400">
+          ✦ สำรับไพ่ทั้งหมด 78 ใบ <span class="text-xs text-gray-400 font-normal">(คลิกเลือกไพ่ที่ต้องการ)</span>
+        </h2>
+        <span class="text-xs text-yellow-500/80">* ไพ่ถูกสับสลับตำแหน่งแบบสุ่มทุกครั้งที่กดปุ่มสับไพ่</span>
+      </div>
+
+      <!-- Grid แสดงไพ่ 78 ใบ พร้อมหมายเลขกำกับใต้ไพ่ -->
+      <div id="deck-grid" class="grid grid-cols-6 sm:grid-cols-10 md:grid-cols-13 lg:grid-cols-[repeat(13,minmax(0,1fr))] gap-2.5 sm:gap-3">
+        <!-- สร้างไพ่ 1 - 78 ด้วย JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ==========================================
+    // ตั้งค่าพาธโฟลเดอร์รูปภาพ (สำหรับ GitHub)
+    // ==========================================
+    const IMAGE_FOLDER = 'images';
+    const BACK_IMAGE_PATH = `${IMAGE_FOLDER}/back.jpg`;
+    const TOTAL_CARDS = 78;
+
+    let maxCards = 3;
+    let deck = []; // เก็บหมายเลขหน้าไพ่ 1-78 ที่ถูกสับแล้ว
+    let selectedCards = []; // เก็บข้อมูลไพ่ที่ผู้ใช้เลือก { slotIndex, cardNumber }
+
+    // สร้าง SVG สำรองกรณีไฟล์ back.jpg หรือ 1.jpg - 78.jpg ยังไม่ได้อัปโหลด
+    function getFallbackBackSVG() {
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300">
+          <defs>
+            <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#1c1926"/>
+              <stop offset="100%" stop-color="#0b0910"/>
+            </linearGradient>
+            <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#f6e27a"/>
+              <stop offset="50%" stop-color="#d4af37"/>
+              <stop offset="100%" stop-color="#996515"/>
+            </linearGradient>
+          </defs>
+          <rect width="200" height="300" rx="12" fill="url(#bg)"/>
+          <rect x="10" y="10" width="180" height="280" rx="8" fill="none" stroke="url(#gold)" stroke-width="2"/>
+          <rect x="18" y="18" width="164" height="264" rx="5" fill="none" stroke="url(#gold)" stroke-width="0.8" stroke-dasharray="4 3"/>
+          <circle cx="100" cy="150" r="42" fill="none" stroke="url(#gold)" stroke-width="1.5"/>
+          <polygon points="100,112 132,168 68,168" fill="none" stroke="url(#gold)" stroke-width="1.2"/>
+          <polygon points="100,188 132,132 68,132" fill="none" stroke="url(#gold)" stroke-width="1.2"/>
+          <circle cx="100" cy="150" r="6" fill="url(#gold)"/>
+        </svg>`;
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    }
+
+    function getFallbackFrontSVG(cardNumber) {
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450">
+          <defs>
+            <linearGradient id="fbg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1e1b29"/>
+              <stop offset="100%" stop-color="#0d0b12"/>
+            </linearGradient>
+            <linearGradient id="fgold" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#f6e27a"/>
+              <stop offset="100%" stop-color="#b38728"/>
+            </linearGradient>
+          </defs>
+          <rect width="300" height="450" rx="16" fill="url(#fbg)"/>
+          <rect x="14" y="14" width="272" height="422" rx="10" fill="none" stroke="url(#fgold)" stroke-width="2.5"/>
+          <circle cx="150" cy="205" r="72" fill="none" stroke="url(#fgold)" stroke-width="1.5" opacity="0.6"/>
+          <text x="150" y="195" text-anchor="middle" fill="#d4af37" font-family="serif" font-size="22" letter-spacing="3">CARD</text>
+          <text x="150" y="245" text-anchor="middle" fill="#f6e27a" font-family="sans-serif" font-weight="bold" font-size="56">${cardNumber}</text>
+          <text x="150" y="385" text-anchor="middle" fill="#9ca3af" font-family="sans-serif" font-size="14">images/${cardNumber}.jpg</text>
+        </svg>`;
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    }
+
+    const FALLBACK_BACK = getFallbackBackSVG();
+
+    // อัลกอริทึม Fisher-Yates Shuffle สุ่มไพ่ 1 - 78
+    function createShuffledDeck() {
+      const arr = Array.from({ length: TOTAL_CARDS }, (_, i) => i + 1);
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // เปลี่ยนจำนวนไพ่ที่ต้องการเลือก (3, 5, 7, 10)
+    function setDrawLimit(limit) {
+      maxCards = limit;
+      document.getElementById('max-count').textContent = limit;
+
+      // อัปเดตสถานะปุ่ม active
+      [3, 5, 7, 10].forEach(num => {
+        const btn = document.getElementById(`btn-limit-${num}`);
+        if (num === limit) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // หากไพ่ที่เลือกอยู่เกินจำนวนใหม่ ให้ตัดส่วนเกินออก
+      if (selectedCards.length > maxCards) {
+        selectedCards = selectedCards.slice(0, maxCards);
+        renderDeck();
+        renderResultRow();
+      }
+      updateCounter();
+    }
+
+    // สับไพ่ใหม่ทั้งหมด
+    function shuffleDeck(showToast = false) {
+      deck = createShuffledDeck();
+      selectedCards = [];
+      
+      const gridEl = document.getElementById('deck-grid');
+      gridEl.classList.remove('shuffling');
+      void gridEl.offsetWidth; // trigger reflow
+      gridEl.classList.add('shuffling');
+
+      renderDeck();
+      renderResultRow();
+      updateCounter();
+
+      if (showToast) {
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: 'สับไพ่ทั้ง 78 ใบเรียบร้อยแล้ว',
+          showConfirmButton: false,
+          timer: 1400,
+          background: '#181520',
+          color: '#f6e27a',
+          iconColor: '#d4af37'
+        });
+      }
+    }
+
+    // ล้างเฉพาะไพ่ที่เลือกโดยไม่สับกองใหม่
+    function resetSelectionOnly() {
+      selectedCards = [];
+      renderDeck();
+      renderResultRow();
+      updateCounter();
+    }
+
+    function updateCounter() {
+      document.getElementById('picked-count').textContent = selectedCards.length;
+    }
+
+    // วาดกองไพ่ 78 ใบ (แสดงหลังไพ่ back.jpg และหมายเลขตำแหน่ง 1-78 ใต้ไพ่)
+    function renderDeck() {
+      const gridEl = document.getElementById('deck-grid');
+      gridEl.innerHTML = '';
+
+      for (let i = 0; i < TOTAL_CARDS; i++) {
+        const slotNumber = i + 1;
+        const isPicked = selectedCards.some(item => item.slotIndex === i);
+
+        const cardWrapper = document.createElement('div');
+        cardWrapper.className = `deck-card flex flex-col items-center select-none ${isPicked ? 'picked' : ''}`;
+        cardWrapper.onclick = () => handleSelectCard(i);
+
+        cardWrapper.innerHTML = `
+          <div class="card-frame w-full aspect-[2/3] rounded-lg overflow-hidden border border-yellow-600/40 bg-[#1a1724] shadow-md">
+            <img 
+              src="${BACK_IMAGE_PATH}" 
+              alt="ไพ่ใบที่ ${slotNumber}" 
+              onerror="this.onerror=null; this.src='${FALLBACK_BACK}';"
+              class="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+          <span class="mt-1 text-[11px] sm:text-xs font-medium ${isPicked ? 'text-gray-600' : 'text-yellow-300/90'}">
+            ${slotNumber}
+          </span>
+        `;
+
+        gridEl.appendChild(cardWrapper);
+      }
+    }
+
+    // เมื่อผู้ใช้คลิกเลือกไพ่จากกอง
+    function handleSelectCard(slotIndex) {
+      if (selectedCards.some(item => item.slotIndex === slotIndex)) return;
+
+      if (selectedCards.length >= maxCards) {
+        Swal.fire({
+          icon: 'info',
+          title: `เลือกไพ่ครบ ${maxCards} ใบแล้ว`,
+          text: 'หากต้องการเปิดไพ่ชุดใหม่ กรุณากดปุ่ม "สับไพ่ (สุ่มใหม่)"',
+          confirmButtonText: 'ตกลง',
+          background: '#16131f',
+          color: '#f3f4f6',
+          confirmButtonColor: '#d4af37'
+        });
+        return;
+      }
+
+      const cardNumber = deck[slotIndex];
+      selectedCards.push({ slotIndex, cardNumber });
+
+      renderDeck();
+      appendResultCard(selectedCards.length - 1, cardNumber, true);
+      updateCounter();
+    }
+
+    // วาดแถวผลลัพธ์ใหม่ทั้งหมด (เรียงแนวนอนถัดกันไป)
+    function renderResultRow() {
+      const rowEl = document.getElementById('result-row');
+      rowEl.innerHTML = '';
+
+      if (selectedCards.length === 0) {
+        rowEl.innerHTML = `
+          <div class="flex flex-col items-center justify-center text-center py-10 px-6 text-gray-500">
+            <div class="w-12 h-12 rounded-full border border-dashed border-yellow-600/40 flex items-center justify-center mb-2 text-yellow-600/60">
+              ✦
+            </div>
+            <p class="text-sm">ยังไม่ได้เลือกไพ่ กรุณาจิ้มเลือกไพ่จากสำรับด้านล่าง (สูงสุด ${maxCards} ใบ)</p>
+          </div>
+        `;
+        return;
+      }
+
+      selectedCards.forEach((item, idx) => {
+        appendResultCard(idx, item.cardNumber, false);
+      });
+    }
+
+    // เพิ่มไพ่ 1 ใบเข้าสู่แถวแนวนอน พร้อมแอนิเมชันพลิกไพ่
+    function appendResultCard(orderIndex, cardNumber, animateFlip) {
+      const rowEl = document.getElementById('result-row');
+      
+      // ลบข้อความ placeholder ถ้ามี
+      if (orderIndex === 0) {
+        rowEl.innerHTML = '';
+      }
+
+      const frontImgPath = `${IMAGE_FOLDER}/${cardNumber}.jpg`;
+      const fallbackFront = getFallbackFrontSVG(cardNumber);
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex flex-col items-center flex-shrink-0 w-32 sm:w-40 md:w-44';
+
+      wrapper.innerHTML = `
+        <div class="text-xs text-yellow-500/90 font-medium mb-1.5 tracking-wide">
+          ใบที่ ${orderIndex + 1}
+        </div>
+        <div onclick="previewCard(${cardNumber}, ${orderIndex + 1})" class="flip-card ${animateFlip ? '' : 'flipped'} w-full aspect-[2/3] cursor-pointer group" title="คลิกเพื่อขยายดูไพ่">
+          <div class="flip-card-inner">
+            <!-- ด้านหลังไพ่ (ก่อนพลิก) -->
+            <div class="flip-card-back border-2 border-yellow-600/60 shadow-lg bg-[#1a1724]">
+              <img 
+                src="${BACK_IMAGE_PATH}" 
+                onerror="this.onerror=null; this.src='${FALLBACK_BACK}';"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <!-- ด้านหน้าไพ่ (หลังพลิก) -->
+            <div class="flip-card-front border-2 border-yellow-400 shadow-[0_8px_25px_rgba(212,175,55,0.35)] bg-[#14121a] group-hover:border-yellow-200 transition">
+              <img 
+                src="${frontImgPath}" 
+                alt="ไพ่หมายเลข ${cardNumber}"
+                onerror="this.onerror=null; this.src='${fallbackFront}';"
+                class="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
+        <!-- หมายเลขกำกับใต้ไพ่ -->
+        <div class="mt-2.5 px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/40 text-yellow-300 text-xs sm:text-sm font-semibold shadow-sm">
+          หมายเลข ${cardNumber}
+        </div>
+      `;
+
+      rowEl.appendChild(wrapper);
+
+      // สั่งพลิกไพ่หลังจากวางลง DOM เล็กน้อย
+      if (animateFlip) {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            const flipEl = wrapper.querySelector('.flip-card');
+            if (flipEl) flipEl.classList.add('flipped');
+          }, 80);
+        });
+      }
+
+      // เลื่อน scrollbar แนวนอนตามใบล่าสุดอัตโนมัติ (กรณีเลือก 7 หรือ 10 ใบ)
+      const scrollContainer = rowEl.parentElement;
+      scrollContainer.scrollTo({
+        left: scrollContainer.scrollWidth,
+        behavior: 'smooth'
+      });
+    }
+
+    // คลิกที่ไพ่ผลลัพธ์เพื่อขยายดูรูปใหญ่
+    function previewCard(cardNumber, orderNum) {
+      const frontImgPath = `${IMAGE_FOLDER}/${cardNumber}.jpg`;
+      const fallbackFront = getFallbackFrontSVG(cardNumber);
+
+      Swal.fire({
+        title: `<span style="color:#f6e27a; font-size:1.25rem;">ไพ่ใบที่ ${orderNum} — หมายเลข ${cardNumber}</span>`,
+        html: `
+          <div class="flex justify-center my-2">
+            <img src="${frontImgPath}" 
+                 onerror="this.onerror=null; this.src='${fallbackFront}';"
+                 style="max-height: 62vh; border-radius: 12px; border: 2px solid #d4af37; box-shadow: 0 10px 30px rgba(0,0,0,0.8);" />
+          </div>
+        `,
+        showConfirmButton: true,
+        confirmButtonText: 'ปิดหน้าต่าง',
+        confirmButtonColor: '#d4af37',
+        background: '#14121a',
+        width: 'auto'
+      });
+    }
+
+    // เริ่มต้นระบบเมื่อโหลดหน้าเว็บ
+    window.addEventListener('DOMContentLoaded', () => {
+      shuffleDeck(false);
+    });
+  </script>
+</body>
+</html>
