@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบเปิดไพ่ทำนาย 78 ใบ</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-dark: #09080d;
+      --panel-bg: #13111a;
+      --card-bg: #1a1724;
+      --gold-light: #f6e27a;
+      --gold-main: #d4af37;
+      --gold-dark: #996515;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, "Sarabun", "Prompt", sans-serif;
+      background-color: var(--bg-dark);
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.16) 0%, transparent 55%),
+        radial-gradient(circle at 85% 90%, rgba(153, 101, 21, 0.12) 0%, transparent 45%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding-bottom: 48px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 24px 16px 20px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+      background: rgba(0, 0, 0, 0.45);
+    }
+
+    .subtitle-top {
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: var(--gold-main);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      background: linear-gradient(to right, #bf953f, #fcf6ba, #d4af37, #fbf5b7, #aa771c);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .header-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Container */
+    .container {
+      max-width: 1240px;
+      margin: 20px auto 0;
+      padding: 0 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Control Bar */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .limit-group, .action-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .label-text {
+      font-size: 14px;
+      color: var(--gold-light);
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    .btn-limit {
+      background: #1b1826;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      color: #e5e7eb;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-limit:hover {
+      border-color: var(--gold-main);
+      color: var(--gold-light);
+    }
+
+    .btn-limit.active {
+      background: linear-gradient(135deg, #f6e27a 0%, #d4af37 50%, #996515 100%);
+      color: #09080d;
+      border-color: var(--gold-light);
+      font-weight: 700;
+      box-shadow: 0 0 14px rgba(212, 175, 55, 0.45);
+    }
+
+    .counter-box {
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    .counter-box strong {
+      color: var(--gold-light);
+      font-size: 16px;
+    }
+
+    .btn-shuffle {
+      background: linear-gradient(135deg, #d4af37 0%, #aa771c 100%);
+      color: #09080d;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-shuffle:hover {
+      background: linear-gradient(135deg, #f6e27a 0%, #d4af37 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(212, 175, 55, 0.5);
+    }
+
+    .btn-shuffle:active {
+      transform: scale(0.97);
+    }
+
+    /* Section Header */
+    .section-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--gold-light);
+    }
+
+    .section-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .btn-clear {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-muted);
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-clear:hover {
+      border-color: var(--gold-main);
+      color: var(--gold-light);
+    }
+
+    /* Horizontal Result Row (บังคับเรียงแนวนอนถัดกันไป) */
+    .result-scroll-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 10px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .result-scroll-wrapper::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .result-scroll-wrapper::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+    }
+
+    .result-scroll-wrapper::-webkit-scrollbar-thumb {
+      background: rgba(212, 175, 55, 0.5);
+      border-radius: 10px;
+    }
+
+    .result-row {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 16px;
+      min-height: 250px;
+      width: max-content;
+      margin: 0 auto;
+      padding: 4px 6px;
+    }
+
+    .empty-result {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 230px;
+      padding: 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .empty-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      border: 1px dashed rgba(212, 175, 55, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-main);
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    /* Drawn Card Item */
+    .drawn-item {
+      flex: 0 0 auto;
+      width: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .drawn-order {
+      font-size: 12px;
+      color: var(--gold-main);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .flip-card {
+      width: 140px;
+      height: 210px;
+      perspective: 1000px;
+      cursor: pointer;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1);
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+    }
+
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+      -webkit-transform: rotateY(180deg);
+    }
+
+    .flip-face {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      background: var(--card-bg);
+    }
+
+    .flip-back {
+      border: 2px solid rgba(212, 175, 55, 0.55);
+    }
+
+    .flip-front {
+      border: 2px solid var(--gold-light);
+      box-shadow: 0 6px 20px rgba(212, 175, 55, 0.35);
+      transform: rotateY(180deg);
+      -webkit-transform: rotateY(180deg);
+    }
+
+    .flip-face img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .drawn-number-badge {
+      margin-top: 8px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(212, 175, 55, 0.14);
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      color: var(--gold-light);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* 78 Cards Grid */
+    .deck-grid {
+      display: grid;
+      grid-template-columns: repeat(13, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    @media (max-width: 1024px) {
+      .deck-grid {
+        grid-template-columns: repeat(10, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .deck-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .drawn-item {
+        width: 112px;
+      }
+      .flip-card {
+        width: 112px;
+        height: 168px;
+      }
+      .result-row {
+        min-height: 215px;
+      }
+    }
+
+    @keyframes shuffleAnim {
+      0% { transform: scale(1); opacity: 1; }
+      35% { transform: scale(0.97) rotate(-0.8deg); opacity: 0.7; }
+      70% { transform: scale(1.01) rotate(0.8deg); opacity: 0.9; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .deck-grid.shuffling {
+      animation: shuffleAnim 0.45s ease;
+    }
+
+    .deck-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .deck-card:hover:not(.picked) {
+      transform: translateY(-6px) scale(1.04);
+      z-index: 5;
+    }
+
+    .deck-card:hover:not(.picked) .deck-thumb {
+      border-color: var(--gold-light);
+      box-shadow: 0 6px 16px rgba(212, 175, 55, 0.45);
+    }
+
+    .deck-card.picked {
+      opacity: 0.22;
+      cursor: not-allowed;
+      pointer-events: none;
+      transform: scale(0.95);
+    }
+
+    .deck-thumb {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      background: var(--card-bg);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+    }
+
+    .deck-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .deck-num {
+      margin-top: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gold-light);
+    }
+
+    .deck-card.picked .deck-num {
+      color: #6b7280;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      background: #1a1726;
+      border: 1px solid var(--gold-main);
+      color: var(--gold-light);
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75);
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(-12px);
+      pointer-events: none;
+      transition: all 0.25s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Modal Preview */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 2000;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #15121e;
+      border: 1px solid var(--gold-main);
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9);
+    }
+
+    .modal-title {
+      color: var(--gold-light);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .modal-img {
+      width: 100%;
+      max-height: 60vh;
+      object-fit: contain;
+      border-radius: 12px;
+      border: 2px solid var(--gold-main);
+      margin-bottom: 16px;
+    }
+
+    .modal-close {
+      background: linear-gradient(135deg, #d4af37 0%, #aa771c 100%);
+      color: #09080d;
+      border: none;
+      padding: 9px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="subtitle-top">Mystic Oracle Deck • 78 Cards</div>
+    <h1>ระบบเปิดไพ่ทำนาย 78 ใบ</h1>
+    <p class="header-desc">เลือกจำนวนไพ่ กดปุ่มสับไพ่ แล้วเลือกไพ่จากสำรับด้านล่าง</p>
+  </header>
+
+  <main class="container">
+    <!-- แผงควบคุม -->
+    <section class="panel controls">
+      <div class="limit-group">
+        <span class="label-text">เลือกจำนวนไพ่:</span>
+        <button type="button" class="btn-limit active" id="btn-3" onclick="setLimit(3)">3 ใบ</button>
+        <button type="button" class="btn-limit" id="btn-5" onclick="setLimit(5)">5 ใบ</button>
+        <button type="button" class="btn-limit" id="btn-7" onclick="setLimit(7)">7 ใบ</button>
+        <button type="button" class="btn-limit" id="btn-10" onclick="setLimit(10)">10 ใบ</button>
+      </div>
+
+      <div class="action-group">
+        <div class="counter-box">
+          เลือกแล้ว: <strong id="count-current">0</strong> / <span id="count-max">3</span> ใบ
+        </div>
+        <button type="button" class="btn-shuffle" onclick="shuffleDeck(true)">
+          🔀 สับไพ่ (สุ่มใหม่)
+        </button>
+      </div>
+    </section>
+
+    <!-- ผลลัพธ์ไพ่ที่เลือก (แนวนอนถัดกันไป) -->
+    <section class="panel">
+      <div class="section-header">
+        <div class="section-title">
+          ✦ ผลลัพธ์ไพ่ที่เลือก <span class="section-hint">(เรียงแนวนอนถัดกันไป • คลิกที่ไพ่เพื่อขยาย)</span>
+        </div>
+        <button type="button" class="btn-clear" onclick="clearSelection()">ล้างไพ่ที่เลือก</button>
+      </div>
+
+      <div class="result-scroll-wrapper" id="result-scroll">
+        <div class="result-row" id="result-row"></div>
+      </div>
+    </section>
+
+    <!-- กองไพ่ทั้งหมด 78 ใบ -->
+    <section class="panel">
+      <div class="section-header">
+        <div class="section-title">
+          ✦ สำรับไพ่ทั้งหมด 78 ใบ <span class="section-hint">(คลิกเลือกไพ่ตามจำนวนที่กำหนด)</span>
+        </div>
+        <span class="section-hint">* ตำแหน่งไพ่ถูกสุ่มสลับใหม่ทุกครั้งที่กดสับไพ่</span>
+      </div>
+
+      <div class="deck-grid" id="deck-grid"></div>
+    </section>
+  </main>
+
+  <!-- Toast แจ้งเตือน -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Modal ขยายดูหน้าไพ่ -->
+  <div class="modal-backdrop" id="preview-modal" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-title" id="modal-title">ไพ่หมายเลข 1</div>
+      <img class="modal-img" id="modal-img" src="" alt="หน้าไพ่" />
+      <div>
+        <button type="button" class="modal-close" onclick="closeModal()">ปิดหน้าต่าง</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const TOTAL_CARDS = 78;
+    const IMAGE_DIR = 'images';
+
+    let drawLimit = 3;
+    let shuffledCards = []; // เก็บเลขหน้าไพ่ 1-78 ที่สับแล้ว
+    let pickedList = [];    // เก็บรายการไพ่ที่เลือก { index, cardNumber }
+
+    // สร้าง SVG สำรองกรณีไม่พบไฟล์ในโฟลเดอร์ images/
+    function createBackSVG() {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="0 0 200 300">
+        <rect width="200" height="300" rx="12" fill="#171421"/>
+        <rect x="10" y="10" width="180" height="280" rx="8" fill="none" stroke="#d4af37" stroke-width="2"/>
+        <rect x="18" y="18" width="164" height="264" rx="5" fill="none" stroke="#d4af37" stroke-width="0.8" stroke-dasharray="4 3"/>
+        <circle cx="100" cy="150" r="38" fill="none" stroke="#f6e27a" stroke-width="1.5"/>
+        <polygon points="100,116 130,168 70,168" fill="none" stroke="#d4af37" stroke-width="1.2"/>
+        <polygon points="100,184 130,132 70,132" fill="none" stroke="#d4af37" stroke-width="1.2"/>
+      </svg>`;
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    }
+
+    function createFrontSVG(num) {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450">
+        <rect width="300" height="450" rx="16" fill="#1b1826"/>
+        <rect x="14" y="14" width="272" height="422" rx="10" fill="none" stroke="#d4af37" stroke-width="2.5"/>
+        <circle cx="150" cy="210" r="68" fill="none" stroke="#f6e27a" stroke-width="1.5" opacity="0.7"/>
+        <text x="150" y="198" text-anchor="middle" fill="#d4af37" font-family="serif" font-size="20" letter-spacing="3">CARD</text>
+        <text x="150" y="248" text-anchor="middle" fill="#f6e27a" font-family="sans-serif" font-weight="bold" font-size="54">${num}</text>
+        <text x="150" y="390" text-anchor="middle" fill="#9ca3af" font-family="sans-serif" font-size="14">images/${num}.jpg</text>
+      </svg>`;
+      return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    }
+
+    const FALLBACK_BACK_URL = createBackSVG();
+
+    // โหลดรูปพร้อมรองรับนามสกุล .jpg / .JPG / .png / .PNG / .jpeg อัตโนมัติบน GitHub
+    function loadSmartImage(imgEl, baseName, fallbackSvg) {
+      const extensions = ['jpg', 'JPG', 'png', 'PNG', 'jpeg', 'JPEG'];
+      let attempt = 0;
+
+      function tryNext() {
+        if (attempt < extensions.length) {
+          imgEl.src = `./${IMAGE_DIR}/${baseName}.${extensions[attempt]}`;
+          attempt++;
+        } else {
+          imgEl.onerror = null;
+          imgEl.src = fallbackSvg;
+        }
+      }
+
+      imgEl.onerror = tryNext;
+      tryNext();
+    }
+
+    // แสดงข้อความแจ้งเตือนมุมขวาบน
+    let toastTimer = null;
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 1800);
+    }
+
+    // อัลกอริทึม Fisher-Yates Shuffle
+    function generateShuffledArray() {
+      const arr = [];
+      for (let i = 1; i <= TOTAL_CARDS; i++) {
+        arr.push(i);
+      }
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+      }
+      return arr;
+    }
+
+    // กำหนดจำนวนไพ่ที่เลือกได้ (3, 5, 7, 10)
+    function setLimit(num) {
+      drawLimit = num;
+      document.getElementById('count-max').textContent = num;
+
+      [3, 5, 7, 10].forEach(n => {
+        const btn = document.getElementById('btn-' + n);
+        if (n === num) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      if (pickedList.length > drawLimit) {
+        pickedList = pickedList.slice(0, drawLimit);
+        renderDeck();
+        renderAllResults();
+      }
+      updateCounter();
+    }
+
+    // สับไพ่ใหม่ทั้งหมด
+    function shuffleDeck(notify) {
+      shuffledCards = generateShuffledArray();
+      pickedList = [];
+
+      const grid = document.getElementById('deck-grid');
+      grid.classList.remove('shuffling');
+      void grid.offsetWidth;
+      grid.classList.add('shuffling');
+
+      renderDeck();
+      renderAllResults();
+      updateCounter();
+
+      if (notify) {
+        showToast('🔀 สับไพ่ทั้ง 78 ใบเรียบร้อยแล้ว');
+      }
+    }
+
+    // ล้างเฉพาะไพ่ที่เลือก
+    function clearSelection() {
+      pickedList = [];
+      renderDeck();
+      renderAllResults();
+      updateCounter();
+    }
+
+    function updateCounter() {
+      document.getElementById('count-current').textContent = pickedList.length;
+    }
+
+    // วาดสำรับไพ่ 78 ใบ (แสดงหลังไพ่ back.jpg และหมายเลข 1-78 ใต้ไพ่)
+    function renderDeck() {
+      const grid = document.getElementById('deck-grid');
+      grid.innerHTML = '';
+
+      for (let i = 0; i < TOTAL_CARDS; i++) {
+        const displayNum = i + 1;
+        const isPicked = pickedList.some(item => item.index === i);
+
+        const cardEl = document.createElement('div');
+        cardEl.className = 'deck-card' + (isPicked ? ' picked' : '');
+        cardEl.onclick = () => selectCard(i);
+
+        const thumb = document.createElement('div');
+        thumb.className = 'deck-thumb';
+
+        const img = document.createElement('img');
+        img.alt = 'ไพ่ใบที่ ' + displayNum;
+        img.loading = 'lazy';
+        loadSmartImage(img, 'back', FALLBACK_BACK_URL);
+
+        const numLabel = document.createElement('div');
+        numLabel.className = 'deck-num';
+        numLabel.textContent = displayNum;
+
+        thumb.appendChild(img);
+        cardEl.appendChild(thumb);
+        cardEl.appendChild(numLabel);
+        grid.appendChild(cardEl);
+      }
+    }
+
+    // เมื่อคลิกเลือกไพ่
+    function selectCard(index) {
+      if (pickedList.some(item => item.index === index)) return;
+
+      if (pickedList.length >= drawLimit) {
+        showToast('เลือกไพ่ครบ ' + drawLimit + ' ใบแล้ว กด "สับไพ่" เพื่อเริ่มใหม่');
+        return;
+      }
+
+      const cardNumber = shuffledCards[index];
+      pickedList.push({ index, cardNumber });
+
+      renderDeck();
+      addResultCard(pickedList.length - 1, cardNumber, true);
+      updateCounter();
+    }
+
+    // วาดแถวผลลัพธ์ทั้งหมดใหม่
+    function renderAllResults() {
+      const row = document.getElementById('result-row');
+      row.innerHTML = '';
+
+      if (pickedList.length === 0) {
+        row.innerHTML = `
+          <div class="empty-result">
+            <div class="empty-icon">✦</div>
+            <div>ยังไม่ได้เลือกไพ่ กรุณาจิ้มเลือกไพ่จากสำรับด้านล่าง (สูงสุด ${drawLimit} ใบ)</div>
+          </div>
+        `;
+        return;
+      }
+
+      pickedList.forEach((item, orderIdx) => {
+        addResultCard(orderIdx, item.cardNumber, false);
+      });
+    }
+
+    // เพิ่มไพ่ 1 ใบเข้าสู่แถวแนวนอน
+    function addResultCard(orderIdx, cardNumber, animate) {
+      const row = document.getElementById('result-row');
+      if (orderIdx === 0) {
+        row.innerHTML = '';
+      }
+
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'drawn-item';
+
+      const orderDiv = document.createElement('div');
+      orderDiv.className = 'drawn-order';
+      orderDiv.textContent = 'ใบที่ ' + (orderIdx + 1);
+
+      const flipCard = document.createElement('div');
+      flipCard.className = 'flip-card' + (animate ? '' : ' flipped');
+      flipCard.onclick = () => openModal(cardNumber, orderIdx + 1);
+
+      const flipInner = document.createElement('div');
+      flipInner.className = 'flip-card-inner';
+
+      // หลังไพ่
+      const backFace = document.createElement('div');
+      backFace.className = 'flip-face flip-back';
+      const backImg = document.createElement('img');
+      loadSmartImage(backImg, 'back', FALLBACK_BACK_URL);
+      backFace.appendChild(backImg);
+
+      // หน้าไพ่
+      const frontFace = document.createElement('div');
+      frontFace.className = 'flip-face flip-front';
+      const frontImg = document.createElement('img');
+      frontImg.alt = 'ไพ่หมายเลข ' + cardNumber;
+      loadSmartImage(frontImg, String(cardNumber), createFrontSVG(cardNumber));
+      frontFace.appendChild(frontImg);
+
+      flipInner.appendChild(backFace);
+      flipInner.appendChild(frontFace);
+      flipCard.appendChild(flipInner);
+
+      // หมายเลขกำกับใต้ไพ่
+      const badge = document.createElement('div');
+      badge.className = 'drawn-number-badge';
+      badge.textContent = 'หมายเลข ' + cardNumber;
+
+      itemDiv.appendChild(orderDiv);
+      itemDiv.appendChild(flipCard);
+      itemDiv.appendChild(badge);
+      row.appendChild(itemDiv);
+
+      if (animate) {
+        requestAnimationFrame(() => {
+          setTimeout(() => {
+            flipCard.classList.add('flipped');
+          }, 70);
+        });
+      }
+
+      // เลื่อนแนวนอนตามใบล่าสุดอัตโนมัติ
+      const scrollBox = document.getElementById('result-scroll');
+      scrollBox.scrollTo({
+        left: scrollBox.scrollWidth,
+        behavior: 'smooth'
+      });
+    }
+
+    // เปิดหน้าต่างขยายดูรูปไพ่
+    function openModal(cardNumber, orderNum) {
+      const modal = document.getElementById('preview-modal');
+      const title = document.getElementById('modal-title');
+      const img = document.getElementById('modal-img');
+
+      title.textContent = `ไพ่ใบที่ ${orderNum} — หมายเลข ${cardNumber}`;
+      loadSmartImage(img, String(cardNumber), createFrontSVG(cardNumber));
+      modal.classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('preview-modal').classList.remove('open');
+    }
+
+    // รองรับการเลื่อนเมาส์แนวตั้งให้เลื่อนแถวผลลัพธ์แนวนอนได้สะดวกบนคอมพิวเตอร์
+    document.getElementById('result-scroll').addEventListener('wheel', function (e) {
+      if (e.deltaY !== 0) {
+        e.preventDefault();
+        this.scrollLeft += e.deltaY;
+      }
+    }, { passive: false });
+
+    // เริ่มต้นระบบ
+    shuffleDeck(false);
+  </script>
+</body>
+</html>
